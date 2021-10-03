@@ -2,7 +2,7 @@ package ckpt1;
 
 import cse332.interfaces.worklists.WorkList;
 import datastructures.worklists.ListFIFOQueue;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ListFIFOQueueTests extends WorklistGradingTests {
 
-    @Before
+    @BeforeEach
     public void init() {
         STUDENT_STR = new ListFIFOQueue<>();
         STUDENT_DOUBLE = new ListFIFOQueue<>();

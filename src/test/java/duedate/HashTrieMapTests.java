@@ -3,6 +3,7 @@ package duedate;
 import cse332.types.AlphabeticString;
 import datastructures.dictionaries.HashTrieMap;
 import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 public class HashTrieMapTests {
     protected static HashTrieMap<Character, AlphabeticString, String> STUDENT;
 
-    @Before
+    @BeforeEach
     public void init() {
         STUDENT = new HashTrieMap<>(AlphabeticString.class);
     }

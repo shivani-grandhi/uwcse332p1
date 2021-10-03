@@ -3,7 +3,7 @@ package ckpt1;
 import cse332.interfaces.worklists.FixedSizeFIFOWorkList;
 import datastructures.worklists.CircularArrayFIFOQueue;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class CircularArrayFIFOQueueTests extends WorklistGradingTests {
     public static final int DEFAULT_CAPACITY = 1000;
 
-    @Before
+    @BeforeEach
     public void init() {
         STUDENT_STR = new CircularArrayFIFOQueue<>(DEFAULT_CAPACITY);
         STUDENT_DOUBLE = new CircularArrayFIFOQueue<>(DEFAULT_CAPACITY);

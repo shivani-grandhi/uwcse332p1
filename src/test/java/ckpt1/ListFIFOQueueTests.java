@@ -8,37 +8,38 @@ import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ListFIFOQueueTests extends WorklistGradingTests {
-
-    @BeforeEach
-    public void init() {
-        STUDENT_STR = new ListFIFOQueue<>();
-        STUDENT_DOUBLE = new ListFIFOQueue<>();
-        STUDENT_INT = new ListFIFOQueue<>();
-    }
+public class ListFIFOQueueTests {
 
     @Test()
     @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
-    public void checkStructure() {
-        WorkList<Integer> queue = new ListFIFOQueue<>();
+    public void test_addPeekNext_manyNumbers_correctStructure() {
+        WorkList<Integer> STUDENT_QUEUE = new ListFIFOQueue<>();
 
-        // Fill
+        // Add numbers 0 - 999 (inclusive) to the queue
         for (int i = 0; i < 1000; i++) {
-            queue.add(i);
-            assertEquals(0, queue.peek().intValue());
-            assertTrue(queue.hasWork());
-            assertEquals((i + 1), queue.size());
+            // Add the number
+            STUDENT_QUEUE.add(i);
+            // Checks if the front of the queue is 0
+            assertEquals(0, STUDENT_QUEUE.peek());
+            // Checks if the queue is not empty
+            assertTrue(STUDENT_QUEUE.hasWork());
+            // Checks if the size is correct
+            assertEquals((i + 1), STUDENT_QUEUE.size());
         }
 
-        // Empty
+        // Empty out the queue
         for (int i = 0; i < 999; i++) {
-            assertTrue(queue.hasWork());
-            assertEquals(i, queue.peek().intValue());
-            assertEquals(i, queue.next().intValue());
-            assertEquals(999 - i, queue.size());
+            // Checks if the queue is not empty
+            assertTrue(STUDENT_QUEUE.hasWork());
+            // Checks if the top of the queue is the correct number
+            assertEquals(i, STUDENT_QUEUE.peek());
+            // Removing the top of the queue should be the correct number
+            assertEquals(i, STUDENT_QUEUE.next());
+            // Checks if the size is correct
+            assertEquals(999 - i, STUDENT_QUEUE.size());
         }
     }
 }

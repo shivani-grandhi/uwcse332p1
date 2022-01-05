@@ -33,7 +33,7 @@ public abstract class WorkList<E> implements Iterable<E> {
     public abstract void add(E work);
 
     /**
-     * Returns a view to the next element of the worklist.
+     * Returns the next element of the worklist.
      *
      * @return the next element in this worklist
      * @throws NoSuchElementException if hasWork() is false

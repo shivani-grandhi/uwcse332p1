@@ -2,43 +2,76 @@ package ckpt1;
 
 import cse332.interfaces.worklists.WorkList;
 import datastructures.worklists.ArrayStack;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ArrayStackTests extends WorklistGradingTests {
+public class ArrayStackTests {
+    @Test()
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    public void test_hasWorkSize_insertOne_updatesState() {
+        WorkList<Integer> STUDENT_STACK = new ArrayStack<>();
 
-    @BeforeEach
-    public void init() {
-        STUDENT_STR = new ArrayStack<>();
-        STUDENT_DOUBLE = new ArrayStack<>();
-        STUDENT_INT = new ArrayStack<>();
+        // before insertion
+        assertFalse(STUDENT_STACK.hasWork());
+
+        STUDENT_STACK.add(1);
+
+        // after insertion
+        assertTrue(STUDENT_STACK.hasWork());
     }
 
     @Test()
     @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
-    public void checkStructure() {
-        WorkList<Integer> stack = new ArrayStack<>();
+    public void test_addNext_oneNumber_correctStructure() {
+        WorkList<Integer> STUDENT_STACK = new ArrayStack<>();
 
-        // Fill
+        STUDENT_STACK.add(1);
+        assertEquals(1, STUDENT_STACK.next());
+    }
+
+    @Test()
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    public void test_add_manyEntries_handlesArrayGrowth() {
+        WorkList<Boolean> STUDENT_STACK = new ArrayStack<>();
+
+        for (int i = 0; i < 100000; i++) {
+            assertDoesNotThrow(() -> {
+                STUDENT_STACK.add(true);
+            });
+        }
+    }
+
+    @Test()
+    @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
+    public void test_addPeekNext_manyNumbers_correctStructure() {
+        WorkList<Integer> STUDENT_STACK = new ArrayStack<>();
+
+        // Add numbers 0 - 999 (inclusive) to the stack
         for (int i = 0; i < 1000; i++) {
-            stack.add(i);
-            assertEquals(i, stack.peek().intValue());
-            assertTrue(stack.hasWork());
-            assertEquals((i + 1), stack.size());
+            // Add the number
+            STUDENT_STACK.add(i);
+            // Checks if the top of the stack is the correct number
+            assertEquals(i, STUDENT_STACK.peek());
+            // Checks if the stack is not empty
+            assertTrue(STUDENT_STACK.hasWork());
+            // Checks if the size is correct
+            assertEquals((i + 1), STUDENT_STACK.size());
         }
 
-        // Empty
+        // Empty out the stack
         for (int i = 999; i >= 0; i--) {
-            assertTrue(stack.hasWork());
-            assertEquals(i, stack.peek().intValue());
-            assertEquals(i, stack.next().intValue());
-            assertEquals(i, stack.size());
+            // Checks if the stack is not empty
+            assertTrue(STUDENT_STACK.hasWork());
+            // Checks if the top of the stack is the correct number
+            assertEquals(i, STUDENT_STACK.peek());
+            // Removing the top of the stack should be the correct number
+            assertEquals(i, STUDENT_STACK.next());
+            // Checks if the size is correct
+            assertEquals(i, STUDENT_STACK.size());
         }
     }
 }

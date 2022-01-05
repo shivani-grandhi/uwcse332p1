@@ -2,36 +2,40 @@ package duedate;
 
 import cse332.types.AlphabeticString;
 import datastructures.dictionaries.HashTrieMap;
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HashTrieMapTests {
-    protected static HashTrieMap<Character, AlphabeticString, String> STUDENT;
-
-    @BeforeEach
-    public void init() {
-        STUDENT = new HashTrieMap<>(AlphabeticString.class);
-    }
 
     /**
      * Tests if insert, find, and findPrefix work in general.
      */
     @Test()
     @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
-    public void testBasic() {
+    public void test_addFindFindPrefix_fewWords_correct() {
+        HashTrieMap<Character, AlphabeticString, String> STUDENT_TRIE = new HashTrieMap<>(AlphabeticString.class);
+
+        // Add all the words into the trie
         String[] words = {"dog", "doggy", "doge", "dragon", "cat", "draggin"};
+        addAll(STUDENT_TRIE, words);
+
+        // Makes sure the trie can:
+        // find each word we inserted
+        // findPrefix each word we inserted
+        // NOT find garbage words
+        // findPrefix every possible prefix of each word we inserted
+        containsAllPaths(STUDENT_TRIE, words);
+
+        // Makes sure the trie CANNOT find each invalid word
         String[] invalid = {"d", "cataract", "", "do"};
-        addAll(STUDENT, words);
-        assertTrue(containsAllPaths(STUDENT, words));
-        assertTrue(doesNotContainAll(STUDENT, invalid));
+        doesNotContainAll(STUDENT_TRIE, invalid);
     }
 
     /**
@@ -39,132 +43,130 @@ public class HashTrieMapTests {
      */
     @Test()
     @Timeout(value = 3000, unit = TimeUnit.MILLISECONDS)
-    public void testBasicDelete() {
+    public void test_delete_fewWords_correct() {
+        HashTrieMap<Character, AlphabeticString, String> STUDENT = new HashTrieMap<>(AlphabeticString.class);
         String[] words = {"dog", "doggy", "dreamer", "cat"};
+
+        // Add all the words into the trie
         addAll(STUDENT, words);
-        assertTrue(containsAllPaths(STUDENT, words));
 
-        STUDENT.delete(a("I don't exist"));
-        STUDENT.delete(a("dreamer"));
-        assertFalse(!containsAllPaths(STUDENT, "dog", "doggy", "cat") &&
-                !containsAllPrefixes(STUDENT, "dreamer", "dreame", "dream", "drea", "dre", "dr") &&
-                !STUDENT.findPrefix(a("d")));
+        // Makes sure the trie can:
+        // find each word we inserted
+        // findPrefix each word we inserted
+        // NOT find garbage words
+        // findPrefix every possible prefix of each word we inserted
+        containsAllPaths(STUDENT, words);
 
-        STUDENT.delete(a("dog"));
-        assertTrue(containsAllPaths(STUDENT, "doggy", "cat"));
+        // Delete something that doesn't exist (shouldn't do anything)
+        STUDENT.delete(toAlphabeticString("I don't exist"));
+        // Delete a word that exists
+        STUDENT.delete(toAlphabeticString("dreamer"));
+        // Check if the other words still exist (it should)
+        containsAllPaths(STUDENT, "dog", "doggy", "cat");
+        // Check if the prefixes of "dreamer" exist (it should NOT)
+        doesNotContainAllPrefixes(STUDENT, "dreamer", "dreame", "dream", "drea", "dre", "dr");
+        // except "d" since it shares with "dog" and "doggy"
+        assertTrue(STUDENT.findPrefix(toAlphabeticString("d")),
+                   "Could not findPrefix d");
 
-        STUDENT.delete(a("doggy"));
-        assertTrue(containsAllPaths(STUDENT, "cat"));
+        // Delete a word that exists
+        STUDENT.delete(toAlphabeticString("dog"));
+        // Check if the other words still exist (it should)
+        containsAllPaths(STUDENT, "doggy", "cat");
+
+        // Delete a word that exists
+        STUDENT.delete(toAlphabeticString("doggy"));
+        // Check if the other words still exist (it should)
+        containsAllPaths(STUDENT, "cat");
     }
+
+    // UTILITY METHODS
 
     /**
      * Converts a String into an AlphabeticString
      */
-    private static AlphabeticString a(String s) {
+    private static AlphabeticString toAlphabeticString(String s) {
         return new AlphabeticString(s);
     }
 
     /**
      * Checks if the trie contains the word and the expected value, and that all prefixes of
      * the word exist in the trie.
+     *
+     * Assumes that the expected value of the key word is word.toUpperCase().
      */
-    private static boolean containsPath(HashTrieMap<Character, AlphabeticString, String> trie, String word, String expectedValue) {
-        AlphabeticString key = a(word);
+    private static void containsPath(HashTrieMap<Character, AlphabeticString, String> trie, String word) {
+        AlphabeticString key = toAlphabeticString(word);
 
-        boolean valueCorrect = expectedValue.equals(trie.find(key));
-        boolean fullWordIsPrefix = trie.findPrefix(key);
-        boolean invalidWordDoesNotExist = trie.find(a(word + "$")) == null;
+        // null if this trie contains no mapping for the word
+        assertEquals(word.toUpperCase(), trie.find(key),
+                     "Could not find " + key);
+        // findPrefix should return true on the key itself
+        assertTrue(trie.findPrefix(key),
+                   "Could not findPrefix " + key);
+        // Should not be able to find garbage words
+        assertNull(trie.find(toAlphabeticString(word + "$")),
+                   "Somehow found " + word + "$ even though it should not exist in the trie");
 
-        if (!valueCorrect || !fullWordIsPrefix || !invalidWordDoesNotExist) {
-            return false;
-        }
-
-        return allPrefixesExist(trie, word);
-    }
-
-    /**
-     * Checks if the trie contains the word, and that all prefixes of the word exist in the trie.
-     * <p>
-     * Assumes that the expected value is word.toUpperCase().
-     */
-    private static boolean containsPath(HashTrieMap<Character, AlphabeticString, String> trie, String word) {
-        return containsPath(trie, word, word.toUpperCase());
+        // Should be able to find every prefix
+        allPrefixesExist(trie, word);
     }
 
     /**
      * Returns true if all prefixes of a word exist in the trie.
-     * <p>
+     *
      * That is, if we do `trie.insert(new AlphabeticString("dog"), "some-value")`, this method
      * would check to see if "dog", "do", "d", and "" are all prefixes of the trie.
      */
-    private static boolean allPrefixesExist(HashTrieMap<Character, AlphabeticString, String> trie, String word) {
-        String accum = "";
+    private static void allPrefixesExist(HashTrieMap<Character, AlphabeticString, String> trie, String word) {
+        String accumulatedWord = "";
         for (char c : word.toCharArray()) {
-            accum += c;
-            if (!trie.findPrefix(a(accum))) {
-                return false;
-            }
+            accumulatedWord += c;
+            // We should be able to find every prefix of the word
+            assertTrue(trie.findPrefix(toAlphabeticString(accumulatedWord)),
+                       "Could not find prefix " + accumulatedWord + " of the word " + word);
         }
-        return true;
     }
 
-    private static boolean containsAllPaths(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
+    /***
+     * Checks if the trie can:
+     * find each word in words
+     * findPrefix each word in words
+     * NOT find garbage words
+     * findPrefix every possible prefix of each word in words
+     */
+    private static void containsAllPaths(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
         for (String word : words) {
-            if (!containsPath(trie, word)) {
-                return false;
-            }
+            containsPath(trie, word);
         }
-        return true;
     }
 
-    private static boolean doesNotContainAll(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
+    /**
+     * Checks if the trie was able to find every word in words
+     */
+    private static void doesNotContainAll(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
         for (String word : words) {
-            if (trie.find(a(word)) != null) {
-                return false;
-            }
+            assertNull(trie.find(toAlphabeticString(word)),
+                       "Was able to find " + word + " even though its not meant to be there");
         }
-        return true;
     }
 
-    private static boolean containsAllPrefixes(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
-        for (String word : words) {
-            if (!trie.findPrefix(a(word))) {
-                return false;
-            }
+    /**
+     * Checks if the trie canNOT findPrefix all the prefixes in prefixes
+     */
+    private static void doesNotContainAllPrefixes(HashTrieMap<Character, AlphabeticString, String> trie, String... prefixes) {
+        for (String prefix : prefixes) {
+            assertFalse(trie.findPrefix(toAlphabeticString(prefix)),
+                        "Was able to findPrefix " + prefix + " even though its not meant to be there");
         }
-        return true;
     }
 
-    private static boolean doesNotContainAllPrefixes(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
-        for (String word : words) {
-            if (trie.findPrefix(a(word))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    /**
+     * Adds all the words in words to the trie
+     */
     private static void addAll(HashTrieMap<Character, AlphabeticString, String> trie, String... words) {
         for (String word : words) {
-            trie.insert(a(word), word.toUpperCase());
-        }
-    }
-
-    protected <T> T getField(Object o, String fieldName) {
-        try {
-            Field field = o.getClass().getSuperclass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Object f = field.get(o);
-            return (T) f;
-        } catch (Exception var6) {
-            try {
-                Field field = o.getClass().getDeclaredField(fieldName);
-                field.setAccessible(true);
-                Object f = field.get(o);
-                return (T) f;
-            } catch (Exception var5) {
-                return null;
-            }
+            trie.insert(toAlphabeticString(word), word.toUpperCase());
         }
     }
 }

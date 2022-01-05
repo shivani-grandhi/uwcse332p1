@@ -201,6 +201,7 @@ public class Inflater
      * <i>undefined</i>.  
      * @deprecated Just clear all references to inflater instead.
      */
+    @Deprecated
     public void end ()
     {
         outputWindow = null;

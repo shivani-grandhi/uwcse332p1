@@ -38,8 +38,12 @@ public class CircularArrayFIFOQueueTests {
         assertEquals(5, STUDENT_QUEUE.capacity());
 
         // Checks to make sure the queue throws NoSuchElementException when calling peek or next
-        assertThrows(NoSuchElementException.class, STUDENT_QUEUE::peek);
-        assertThrows(NoSuchElementException.class, STUDENT_QUEUE::next);
+        assertThrows(NoSuchElementException.class, () -> {
+            STUDENT_QUEUE.peek();
+        });
+        assertThrows(NoSuchElementException.class, () -> {
+            STUDENT_QUEUE.next();
+        });
     }
 
     @Test()

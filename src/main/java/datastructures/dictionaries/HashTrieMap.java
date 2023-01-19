@@ -42,6 +42,9 @@ public class HashTrieMap<A extends Comparable<A>, K extends BString<A>, V> exten
         if (key == null || value == null){
             throw new IllegalArgumentException();
         }
+        if (this.root == null) {
+            this.root = new HashTrieNode();
+        }
         HashTrieNode root = (HashTrieNode) this.root;
         for (A search : key){
             if (!root.pointers.containsKey(search)){
@@ -91,43 +94,43 @@ public class HashTrieMap<A extends Comparable<A>, K extends BString<A>, V> exten
 
     @Override
     public void delete(K key) {
-        HashTrieNode temp = (HashTrieNode) this.root;
-        HashTrieNode temp2 = (HashTrieNode) this.root;
-        HashTrieNode multiChild = null;
-        A holderChild = null;
-        A lastChild = null;
-
         if (key == null) {
-            throw new NoSuchElementException();
-        } else {
-            for (A findKey : key) {
-                Object value = temp.pointers.get(findKey);
-                if (value == null) {
-                    return;
-                } else {
-                    if (temp.pointers.size() > 1 || temp.value != null) {
-                        multiChild = temp;
-                        holderChild = findKey;
-                    }
-                }
-                temp = temp.pointers.get(findKey);
-                lastChild = findKey;
-            }
-            if (temp.pointers.size() > 0) {
-                temp.value = null;
-            } else if (multiChild != null) {
-                multiChild.pointers.remove(holderChild);
+            throw new IllegalArgumentException();
+        }
+        HashTrieNode temp = (HashTrieNode)this.root;
 
-            }
-            if (temp.value == null) {
+        Iterator<A> itr = key.iterator();
+        A temp2 = null;
+
+        HashTrieNode node = (HashTrieNode)this.root;
+
+        while (itr.hasNext()) {
+            A next = itr.next();
+
+            if (node == null) {
                 return;
             }
-            temp.value = null;
-            this.size--;
-            if (temp2.pointers.size() <= 1) {
-                this.size--;
-                temp2.pointers.remove(lastChild);
+
+            if (node.value != null || node.pointers.size() >= 2) {
+                temp = node;
+                temp2 = next;
             }
+
+            if (node.pointers.size() != 0) {
+                node = node.pointers.get(next);
+            } else {
+                return;
+            }
+        }
+        if (node != null && node.value != null) {
+            if (node.pointers.size() != 0) {
+                node.value = null;
+            } else if (temp2 != null) {
+                temp.pointers.remove(temp2);
+            }
+            node.value = null;
+
+            this.size--;
         }
     }
 

@@ -45,18 +45,25 @@ public class HashTrieMap<A extends Comparable<A>, K extends BString<A>, V> exten
         if (this.root == null) {
             this.root = new HashTrieNode();
         }
-        HashTrieNode root = (HashTrieNode) this.root;
-        for (A search : key){
-            if (!root.pointers.containsKey(search)){
-                root.pointers.put(search, new HashTrieNode());
+        V temp = null;
+        if (key.isEmpty()) {
+            temp = this.root.value;
+            this.root.value = value;
+        } else {
+            HashTrieNode root = (HashTrieNode) this.root;
+            for (A search : key) {
+                if (!root.pointers.containsKey(search)) {
+                    root.pointers.put(search, new HashTrieNode());
+                }
+                root = root.pointers.get(search);
             }
-            root = root.pointers.get(search);
+            temp = root.value;
+            root.value = value;
         }
-        if(root.value == null){
+        if(temp == null){
             size++;
         };
-        root.value = value;
-        return root.value;
+        return temp;
     }
 
     @Override
